@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - UniEats{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+<div class="profile-content-wrapper">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="profile-header">Your Profile</h1>
+            <p class="lead text-muted">Manage your account settings and preferences</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <h2 class="mb-3"><i class="fas fa-user me-2 icon-bounce"></i>Personal Information</h2>
+            <form action="{{ url_for('profile') }}" method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3 form-floating">
+                        <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required placeholder="Full Name">
+                        <label for="name">Full Name</label>
+                    </div>
+                    <div class="col-md-6 mb-3 form-floating">
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required placeholder="Email">
+                        <label for="email">Email</label>
+                    </div>
+                </div>
+                <div class="mb-3 form-floating">
+                    <input type="text" class="form-control" id="student_id" value="{{ user.student_id }}" readonly placeholder="Student ID">
+                    <label for="student_id">Student ID</label>
+                </div>
+                <button type="submit" class="btn btn-lg">
+                    <i class="fas fa-save me-2 icon-bounce"></i>Save Changes
+                </button>
+            </form>
+            <h2 class="mt-5 mb-3"><i class="fas fa-bell me-2 icon-bounce"></i>Reminder Settings</h2>
+            <form id="reminderForm" class="mb-3">
+                <div class="mb-3 form-floating">
+                    <input type="date" class="form-control" id="reminderDate" name="reminderDate" placeholder="Reminder Date">
+                    <label for="reminderDate">Reminder Date</label>
+                </div>
+                <div class="mb-3 form-floating">
+                    <input type="time" class="form-control" id="reminderTime" name="reminderTime" placeholder="Reminder Time">
+                    <label for="reminderTime">Reminder Time</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="reminderToggle" checked>
+                    <label class="form-check-label" for="reminderToggle">Enable Reminder</label>
+                </div>
+                <button type="submit" class="btn btn-lg w-100">
+                    <i class="fas fa-save me-2 icon-bounce"></i>Set Reminder
+                </button>
+            </form>
+            <div id="notificationStatus" class="alert alert-info" style="display: none;">
+                <i class="fas fa-info-circle me-2 icon-bounce"></i>
+                <span id="notificationMessage"></span>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <h2 class="mb-3"><i class="fas fa-chart-bar me-2 icon-bounce"></i>Order Statistics</h2>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <div>
+                        <h6 class="mb-0">Total Orders</h6>
+                        <h3 class="mb-0">{{ total_orders }}</h3>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Total Spent</h6>
+                        <h3 class="mb-0">₹{{ total_spent }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.body.classList.add('profile-bg');
+
+// Reminder Settings Logic
+function showNotification(title, body) {
+    if (Notification.permission === 'granted') {
+        new Notification(title, { body });
+    }
+}
+
+function scheduleReminder(dateStr, timeStr, enabled) {
+    if (!enabled) return;
+    const now = new Date();
+    const reminderDateTime = new Date(dateStr + 'T' + timeStr);
+    const msUntilReminder = reminderDateTime - now;
+    if (msUntilReminder > 0) {
+        setTimeout(() => {
+            showNotification('Cafeteria Reminder', 'This is your scheduled reminder!');
+            // Reset fields after notification
+            document.getElementById('reminderDate').value = '';
+            document.getElementById('reminderTime').value = '';
+            document.getElementById('reminderToggle').checked = false;
+            document.getElementById('notificationStatus').style.display = 'none';
+            localStorage.removeItem('cafeteriaReminder');
+        }, msUntilReminder);
+    }
+}
+
+document.getElementById('reminderForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const date = document.getElementById('reminderDate').value;
+    const time = document.getElementById('reminderTime').value;
+    const enabled = document.getElementById('reminderToggle').checked;
+    if (!date || !time) {
+        document.getElementById('notificationStatus').style.display = 'block';
+        document.getElementById('notificationMessage').textContent = 'Please select both date and time.';
+        return;
+    }
+    // Request notification permission if needed
+    if (Notification.permission !== 'granted') {
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                scheduleReminder(date, time, enabled);
+            }
+        });
+    } else {
+        scheduleReminder(date, time, enabled);
+    }
+    // Store in localStorage for persistence (optional)
+    localStorage.setItem('cafeteriaReminder', JSON.stringify({ date, time, enabled }));
+    document.getElementById('notificationStatus').style.display = 'block';
+    document.getElementById('notificationMessage').textContent = 'Reminder set for ' + date + ' at ' + time + (enabled ? '.' : ' (disabled)');
+});
+
+// On page load, check if a reminder is set and schedule it
+(function() {
+    const saved = localStorage.getItem('cafeteriaReminder');
+    if (saved) {
+        const { date, time, enabled } = JSON.parse(saved);
+        if (enabled && date && time) {
+            scheduleReminder(date, time, enabled);
+        }
+    }
+})();
+</script>
+{% endblock %} 

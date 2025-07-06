@@ -1,0 +1,139 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Register - UniEats{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;900&display=swap');
+body.signup-bg {
+    background: url('/static/images/signup.jpg') center center/cover no-repeat !important;
+    min-height: 100vh;
+    width: 100vw;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Baloo 2', sans-serif;
+}
+.footer { background: transparent !important; box-shadow: none !important; }
+.signup-content {
+    text-align: center;
+    color: #232323;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding-top: 55vh;
+    padding-bottom: 0;
+    background: none;
+    box-shadow: none;
+    font-family: 'Baloo 2', sans-serif;
+    position: static;
+    top: auto;
+    transform: none;
+}
+.signup-content h2 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 1.2em;
+    color: #181818;
+    text-shadow: 0 2px 8px rgba(255,255,255,0.18);
+}
+.signup-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+.signup-content label {
+    color: #181818;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    font-family: 'Baloo 2', sans-serif;
+}
+.signup-content input[type="text"],
+.signup-content input[type="email"],
+.signup-content input[type="password"] {
+    border-radius: 0.7rem;
+    border: 1.5px solid #232323;
+    font-size: 1.05rem;
+    padding: 0.7em 1em;
+    background: #fff;
+    color: #232323;
+    font-family: 'Baloo 2', sans-serif;
+}
+.signup-content input:focus {
+    border-color: #b9935a;
+    outline: none;
+}
+.signup-btn {
+    display: inline-block;
+    min-width: 120px;
+    padding: 0.7em 2em;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 2rem;
+    background: linear-gradient(90deg, #b9935a 0%, #e0c385 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: background 0.22s, color 0.22s, transform 0.18s;
+    cursor: pointer;
+    outline: none;
+    margin-bottom: 0.5rem;
+    font-family: 'Baloo 2', sans-serif;
+}
+.signup-btn:hover, .signup-btn:focus {
+    background: linear-gradient(90deg, #e0c385 0%, #b9935a 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.06);
+}
+.signup-content a {
+    color: #b9935a;
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.18s;
+    font-family: 'Baloo 2', sans-serif;
+}
+.signup-content a:hover {
+    color: #E53935;
+}
+@media (max-width: 600px) {
+    .signup-content h2 { font-size: 1.3rem; }
+    .signup-content { padding-top: 8vh; }
+    .signup-btn { font-size: 1rem; padding: 0.6em 1em; }
+}
+</style>
+<script>document.body.classList.add('signup-bg');</script>
+<div class="signup-content">
+    <h2>Create Account</h2>
+    <form method="POST">
+        <div>
+            <label for="student_id" class="form-label">Student ID</label>
+            <input type="text" class="form-control" id="student_id" name="student_id" required>
+        </div>
+        <div>
+            <label for="name" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div>
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div>
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="signup-btn">Register</button>
+    </form>
+    <div class="text-center mt-3">
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        <p><a href="{{ url_for('welcome') }}">Back to Welcome Page</a></p>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Your Cart - UniEats{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+<style>
+  body.cart-bg {
+    background: url('/static/images/cart.jpg') center center/cover no-repeat fixed !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+    width: 100vw;
+  }
+  .cart-header, .lead { color: #232323 !important; text-shadow: none; }
+  .cart-section, .order-summary-card, .glass-layer, .neumorph { background: none !important; box-shadow: none !important; border: none !important; }
+  .cart-section, .order-summary-card { padding: 0; margin: 0; }
+  .btn, .btn-lg, .btn-sm { border-radius: 1.2rem !important; }
+</style>
+<script>document.body.classList.add('cart-bg');</script>
+<div class="container py-4 fade-in">
+    <div class="text-center mb-4">
+        <h1 class="cart-header">Your Cart</h1>
+        <p class="lead">Review your order before checkout</p>
+    </div>
+    <div class="cart-row-flex align-items-start" style="display: flex; align-items: flex-start; gap: 2rem;">
+        <div style="flex:2 1 0%; display: flex; flex-direction: column; align-items: flex-start;">
+            <div class="cart-section">
+                <div class="table-responsive" style="padding: 0; margin: 0;">
+                    {% if cart_items %}
+                    <table class="table align-middle mb-0">
+                        <thead style="background:rgba(167,139,250,0.12);">
+                            <tr>
+                                <th style="width: 40%">Item</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody class="stagger-fadein">
+                            {% for item in cart_items %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold">{{ item.name }}</span>
+                                </td>
+                                <td>
+                                    <form action="{{ url_for('update_cart') }}" method="POST" class="d-inline-flex align-items-center quantity-control">
+                                        <input type="hidden" name="item_name" value="{{ item.name }}">
+                                        <input type="hidden" name="is_future_order" value="{{ 1 if item.is_future_order else 0 }}">
+                                        <input type="hidden" name="pickup_date" value="{{ item.pickup_date or '' }}">
+                                        <input type="hidden" name="pickup_time" value="{{ item.pickup_time or '' }}">
+                                        <button type="submit" name="quantity" value="{{ item.quantity - 1 }}" class="btn btn-sm" {% if item.quantity <= 1 %}disabled{% endif %} title="Decrease">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <span class="mx-2">{{ item.quantity }}</span>
+                                        <button type="submit" name="quantity" value="{{ item.quantity + 1 }}" class="btn btn-sm" title="Increase">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                <td><span class="price">₹{{ item.price }}</span></td>
+                                <td><span class="fw-bold">₹{{ item.quantity * item.price }}</span></td>
+                                <td>
+                                    <form action="{{ url_for('remove_from_cart') }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="item_name" value="{{ item.name }}">
+                                        <input type="hidden" name="is_future_order" value="{{ 1 if item.is_future_order else 0 }}">
+                                        <input type="hidden" name="pickup_date" value="{{ item.pickup_date or '' }}">
+                                        <input type="hidden" name="pickup_time" value="{{ item.pickup_time or '' }}">
+                                        <button type="submit" class="btn btn-sm" title="Remove item">
+                                            <i class="fas fa-trash icon-bounce"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="cart-empty text-center fade-in">
+                        <i class="fas fa-shopping-cart fa-4x text-muted mb-4 icon-bounce"></i>
+                        <h3 class="text-muted mb-3">Your cart is empty</h3>
+                        <p class="text-muted mb-4">Add some delicious items to your cart!</p>
+                        <a href="{{ url_for('menu') }}" class="btn btn-lg">
+                            <i class="fas fa-utensils me-2 icon-bounce"></i>Browse Menu
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="order-summary-card position-sticky" style="top: 1.2rem; flex:1 1 0%; min-width:220px; max-width:300px; align-self: flex-start; margin-top:0.5rem; margin-left: 1.2rem;">
+            <div class="p-4">
+                <h2 class="fw-bold mb-4" style="color: #232323; margin-top:0;">
+                    <i class="fas fa-receipt me-2"></i>Order Summary
+                </h2>
+                {% if cart_items %}
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total Amount</strong>
+                        <strong class="text-success">₹{{ total }}</strong>
+                    </div>
+                    <form action="{{ url_for('payment') }}" method="GET">
+                        <button type="submit" class="btn btn-lg w-100 mt-3">
+                            <i class="fas fa-credit-card me-2 icon-bounce"></i>Checkout
+                        </button>
+                    </form>
+                    {% if order_success %}
+                    <div class="text-center mt-4">
+                        <span class="animated-check">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M6 12l4 4 8-8"/></svg>
+                        </span>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <p class="mb-3">No items in cart</p>
+                        <a href="{{ url_for('menu') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-utensils me-2 icon-bounce"></i>Browse Menu
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

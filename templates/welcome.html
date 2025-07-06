@@ -1,0 +1,99 @@
+{% extends "base_auth.html" %}
+{% block title %}Welcome to UniEats{% endblock %}
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;900&display=swap');
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-family: 'Baloo 2', sans-serif;
+    /* background: #181818; */
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+    font-family: inherit;
+}
+.welcome-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100vh;
+    background: url('/static/images/welcome.jpg') center center/cover no-repeat;
+    z-index: -1;
+}
+.welcome-overlay {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+.welcome-content {
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 1.5px 0 #232323;
+}
+.welcome-content h1 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 3.2rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 0.5em;
+    background: linear-gradient(90deg, #FF9800 0%, #E53935 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.45);
+}
+.welcome-content p {
+    font-size: 1.5rem;
+    margin-bottom: 2.5rem;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+}
+.welcome-btn {
+    display: inline-block;
+    min-width: 140px;
+    margin: 0 0.7rem;
+    padding: 0.85em 2.2em;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 2rem;
+    background: linear-gradient(90deg, #FF9800 0%, #E53935 100%);
+    color: #fff;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    transition: background 0.22s, color 0.22s, transform 0.18s, box-shadow 0.18s;
+    cursor: pointer;
+    outline: none;
+    font-family: 'Baloo 2', sans-serif;
+}
+.welcome-btn:hover, .welcome-btn:focus {
+    background: linear-gradient(90deg, #FFD600 0%, #FF9800 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 6px 24px rgba(255, 152, 0, 0.25);
+}
+@media (max-width: 600px) {
+    .welcome-content h1 { font-size: 2rem; }
+    .welcome-content p { font-size: 1.1rem; }
+    .welcome-btn { font-size: 1rem; padding: 0.7em 1.2em; }
+}
+</style>
+<div class="welcome-bg"></div>
+<div class="welcome-overlay">
+    <div class="welcome-content">
+        <h1>Welcome to UniEats</h1>
+        <p>Order your favorite meals, drinks, and more with ease!</p>
+        <a href="{{ url_for('login') }}" class="welcome-btn">Login</a>
+        <a href="{{ url_for('register') }}" class="welcome-btn">Sign Up</a>
+    </div>
+</div>
+{% endblock %} 

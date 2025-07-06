@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% block title %}Breakfast Menu - UniEats{% endblock %}
+
+{% block styles %}
+<style>
+/* Background image for breakfast menu */
+body {
+    background: url('/static/images/menucategory.jpg') center center/cover no-repeat fixed !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+    color: #fff !important;
+}
+
+body h1, body h2, body h3, body h4, body h5, body h6,
+body .lead, body .card-title, body .card-text {
+    color: #fff !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7), 0 1px 2px rgba(0,0,0,0.5);
+}
+
+body .btn, body .menu-tab-btn {
+    background: rgba(0,0,0,0.55) !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: background 0.2s, color 0.2s;
+}
+
+body .btn:hover, body .menu-tab-btn:hover {
+    background: rgba(255,255,255,0.18) !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+body .card {
+    background: rgba(0,0,0,0.35) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+}
+
+body.modal-open {
+    overflow: hidden;
+    padding-right: 17px; /* Scrollbar width */
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    outline: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    margin: 0.5rem;
+    pointer-events: none;
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+@media (min-width: 576px) {
+    .modal-dialog {
+        max-width: 500px;
+        margin: 1.75rem auto;
+    }
+}
+
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    pointer-events: auto;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 0.3rem;
+    outline: 0;
+}
+</style>
+{% endblock %}
+
+{% block body_class %}menu-category-bg{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+    <h1 class="display-4 mb-4 text-center">Breakfast Menu</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-success">{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+    <!-- Recommendations Block -->
+    <div class="recommendations mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold">⭐ Recommended Breakfast Items</h3>
+            <button class="btn btn-sm btn-outline-secondary" onclick="this.parentElement.parentElement.style.display='none'">Dismiss</button>
+        </div>
+        {% if recommendations %}
+        <div class="menu-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+            {% for rec in recommendations[:5] if rec.category|lower == 'breakfast' and rec.name not in not_interested %}
+            <div class="card h-100 recommend-card" data-name="{{ rec.name }}">
+                <div class="card-img-top">
+                    <img src="{{ rec.image_url }}" 
+                         alt="{{ rec.name }}" 
+                         onerror="this.src='/static/images/placeholder.jpg'">
+                    {% if rec.is_veg %}
+                    <span class="veg-tag">
+                        <i class="fas fa-leaf"></i> Veg
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="card-content">
+                        <h5 class="card-title">{{ rec.name }}</h5>
+                        <h4 class="text-primary">₹{{ rec.price }}</h4>
+                    </div>
+                    <div class="card-actions">
+                        <form action="{{ url_for('add_to_cart') }}" method="POST">
+                            <input type="hidden" name="item_name" value="{{ rec.name }}">
+                            <button type="submit" class="btn btn-success menu-button">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </form>
+                        <button class="btn btn-link btn-sm text-danger" onclick="notInterested('{{ rec.name }}', this)">Not interested?</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Like more items or place orders to get personalized recommendations!
+        </div>
+        {% endif %}
+    </div>
+    <!-- End Recommendations Block -->
+    <div class="menu-grid">
+        {% for item in menu_items %}
+        <div class="card h-100">
+            <div class="card-img-top">
+                {% if item[7] %}
+                    <img src="{{ item[7] }}" alt="{{ item[1] }}">
+                {% else %}
+                    <i class="fas fa-utensils fa-3x text-muted" aria-label="No image available"></i>
+                {% endif %}
+                {% if item[4] %}
+                <span class="veg-tag">
+                    <i class="fas fa-leaf"></i> Veg
+                </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="card-content">
+                    <h5 class="card-title">{{ item[1] }}</h5>
+                    <h4 class="text-primary">₹{{ item[2] }}</h4>
+                </div>
+                <div class="card-actions">
+                    <form action="{{ url_for('add_to_cart') }}" method="POST">
+                        <input type="hidden" name="item_name" value="{{ item[1] }}">
+                        <input type="hidden" name="category" value="breakfast">
+                        <button type="submit" class="btn btn-primary menu-button">
+                            <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                        </button>
+                    </form>
+                    <form action="{{ url_for('add_to_cart') }}" method="POST" class="future-order-form">
+                        <input type="hidden" name="item_name" value="{{ item[1] }}">
+                        <input type="hidden" name="category" value="breakfast">
+                        <button type="button" class="btn btn-outline-primary menu-button order-later-btn">
+                            <i class="far fa-clock me-2"></i>Order for Later
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block modal %}
+<!-- Future Order Modal -->
+<div class="modal fade" id="futureOrderModal" tabindex="-1" aria-labelledby="futureOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="futureOrderModalLabel">Schedule Order for Later</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="futureOrderForm" action="{{ url_for('add_to_cart') }}" method="POST">
+                    <input type="hidden" name="item_name" id="modalItemName">
+                    <input type="hidden" name="is_future_order" value="true">
+                    <input type="hidden" name="category" value="breakfast">
+                    <div class="mb-3">
+                        <label for="pickupDate" class="form-label">Pickup Date</label>
+                        <input type="date" class="form-control" id="pickupDate" name="pickup_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pickupTime" class="form-label">Pickup Time</label>
+                        <select class="form-select" id="pickupTime" name="pickup_time" required>
+                            <!-- Time slots will be populated by JS -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You'll receive a reminder notification 15 minutes before your pickup time.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="futureOrderForm" class="btn btn-primary">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.order-later-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('.future-order-form');
+            const itemName = form.querySelector('input[name="item_name"]').value;
+            document.getElementById('modalItemName').value = itemName;
+            populatePickupTimes();
+            const modalElement = document.getElementById('futureOrderModal');
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        });
+    });
+    const pickupDateInput = document.getElementById('pickupDate');
+    if (pickupDateInput) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        pickupDateInput.min = tomorrow.toISOString().split('T')[0];
+        pickupDateInput.value = tomorrow.toISOString().split('T')[0];
+        pickupDateInput.addEventListener('change', populatePickupTimes);
+    }
+    function populatePickupTimes() {
+        const pickupTimeSelect = document.getElementById('pickupTime');
+        pickupTimeSelect.innerHTML = '';
+        for (let hour = 8; hour < 20; hour++) {
+            for (let min of [0, 30]) {
+                const time = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+                const option = document.createElement('option');
+                option.value = time;
+                option.textContent = time;
+                pickupTimeSelect.appendChild(option);
+            }
+        }
+    }
+    populatePickupTimes();
+});
+
+function notInterested(itemName, btn) {
+    // Remove the card from the UI
+    var card = btn.closest('.recommend-card');
+    if(card) card.remove();
+}
+</script>
+{% endblock %} 

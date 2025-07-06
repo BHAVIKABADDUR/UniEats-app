@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block body_class %}pending-bg pending-navbar-left{% endblock %}
+
+{% block title %}Pending Orders - UniEats{% endblock %}
+
+{% block head %}
+<style>
+/* Removed background CSS for body.pending-bg from here. Now in static/css/style.css */
+.pending-orders-content {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 2vw 2vw 2vw 2vw;
+}
+.pending-orders-list {
+  flex: 1 1 60%;
+  max-width: 60vw;
+  position: relative;
+}
+.order-confirm-area {
+  flex: 0 0 32vw;
+  max-width: 32vw;
+  margin-left: 2vw;
+  margin-top: 2vw;
+  background: rgba(255,255,255,0.85);
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 2rem 2.5rem;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+@media (max-width: 900px) {
+  .pending-orders-content { flex-direction: column; align-items: stretch; }
+  .pending-orders-list, .order-confirm-area { max-width: 100vw; margin-left: 0; }
+  .order-confirm-area { align-items: center; }
+}
+.scrollable-orders {
+  overflow-y: scroll; /* Always show scrollbar */
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+  max-height: 60vh; /* Reduced height to ensure scrollbar appears */
+  padding-right: 12px; /* More padding for scrollbar */
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Vertical layout for pending orders */
+.pending-orders-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.pending-order-item {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+.pending-order-item .pending-card {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+/* Custom scrollbar styling for pending orders */
+.scrollable-orders::-webkit-scrollbar {
+  width: 12px; /* Wider scrollbar for better visibility */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.scrollable-orders::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.scrollable-orders::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #b9935a 0%, #e0c385 100%);
+  border-radius: 6px;
+  min-height: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.scrollable-orders::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #e0c385 0%, #b9935a 100%);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.scrollable-orders::-webkit-scrollbar-corner {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+/* For Firefox */
+.scrollable-orders {
+  scrollbar-width: auto;
+  scrollbar-color: #b9935a rgba(255, 255, 255, 0.1);
+}
+
+/* Scroll indicator styling */
+.scroll-indicator {
+  text-align: center;
+  padding: 8px 0;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.scroll-indicator i {
+  margin-right: 8px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+@media (max-width: 900px) {
+  .scrollable-orders {
+    max-height: 65vh; /* Adjusted for mobile */
+    padding-right: 10px;
+    overflow-x: hidden; /* Ensure no horizontal scroll on mobile */
+  }
+  
+  .scrollable-orders::-webkit-scrollbar {
+    width: 10px; /* Slightly smaller on mobile */
+  }
+  
+  .scroll-indicator {
+    font-size: 0.8rem;
+    padding: 6px 0;
+  }
+  
+  .pending-orders-vertical {
+    gap: 1rem; /* Smaller gap on mobile */
+  }
+  
+  .pending-order-item {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pending-circle-content">
+  <div class="pending-orders-content">
+    <div class="pending-orders-list scrollable-orders">
+      <h1 class="pending-header text-center">Pending Orders</h1>
+      <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+        <span>Scroll to see all orders</span>
+      </div>
+      <div id="notifications" class="mb-4"></div>
+      {% if orders %}
+      <div class="pending-orders-vertical">
+          {% for order in orders[:6] %} <!-- Limit to 6 orders to prevent overflow -->
+          <div class="pending-order-item">
+              <div class="pending-card glass-layer neumorph {% if order.is_running_late %}border-warning{% endif %}">
+                  <div class="card-header">
+                      <div>
+                          <i class="fas fa-clock me-2"></i>Order #{{ order.id }}
+                      </div>
+                      <div>
+                          <span class="badge">{{ order.status|title }}</span>
+                      </div>
+                  </div>
+                  <hr class="pending-divider" />
+                  <div class="card-body">
+                      {% if order.formatted_pickup_time %}
+                          <div class="mb-3 pickup-time-display">
+                              <div class="pickup-time-label">
+                                  <i class="fas fa-calendar-alt me-2"></i>
+                                  <strong>Pickup Date & Time:</strong>
+                              </div>
+                              <div class="pickup-time-value">
+                                  {{ order.formatted_pickup_time }}
+                              </div>
+                          </div>
+                      {% endif %}
+                      <div class="mb-3">
+                          <strong><i class="fas fa-utensils me-2"></i>Items:</strong>
+                          <ul class="pending-items-list">
+                              {% for item in order.order_items %}
+                                  <li class="pending-item"><span>{{ item.name }} x {{ item.quantity }}</span></li>
+                              {% endfor %}
+                          </ul>
+                      </div>
+                      <div class="mb-2">
+                          <strong><i class="fas fa-rupee-sign me-2"></i>Total Amount:</strong>
+                          <span class="total-amount">₹{{ "%.2f"|format(order.total_amount) }}</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          {% endfor %}
+      </div>
+      {% if orders|length > 6 %}
+      <div class="text-center mt-3">
+          <p class="text-muted">
+              <i class="fas fa-info-circle me-2"></i>
+              Showing 6 most recent pending orders. Scroll to see more.
+          </p>
+      </div>
+      {% endif %}
+      {% else %}
+          <div class="pending-section glass-layer text-center fade-in">
+              <i class="fas fa-info-circle fa-3x mb-3 text-muted"></i>
+              <h3 class="text-muted mb-3">No pending orders found.</h3>
+              <a href="{{ url_for('menu') }}" class="btn btn-lg" style="background:linear-gradient(90deg,#34d399 0%,#06b6d4 100%);color:#fff;">
+                  <i class="fas fa-utensils me-2"></i>Browse Menu
+              </a>
+          </div>
+      {% endif %}
+    </div>
+    <div class="order-confirm-area">
+      {# You can include order confirmation content here, or use an include if needed #}
+      {% if show_order_confirmation %}
+        <div class="order-confirm-message">
+          <h3 class="mb-3">Order Confirmed!</h3>
+          <p class="order-confirm-lead">Your order has been placed and is being processed. You will receive a notification when it is ready for pickup.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<div style="height: 200px;"></div>
+
+<!-- Modify Time Modal -->
+<div class="modal fade" id="modifyTimeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modify Pickup Time</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="modifyTimeForm" action="" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Pickup Date</label>
+                        <input type="date" class="form-control" name="pickup_date" id="modifyPickupDate" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Pickup Time</label>
+                        <select class="form-select" name="pickup_time" id="modifyPickupTime" required>
+                            <!-- Time slots will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Your reminder notification will be updated accordingly.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="modifyTimeForm" class="btn btn-primary">
+                    Update Time
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Running Late Modal -->
+<div class="modal fade" id="runningLateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Running Late?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="runningLateForm" action="" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">How many minutes late?</label>
+                        <select class="form-select" name="delay_minutes" required>
+                            <option value="15">15 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">1 hour</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="runningLateForm" class="btn btn-warning">
+                    Update Time
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.body.classList.add('pending-bg');
+
+function updatePickupTime(orderId) {
+    // Show a modal or prompt for new pickup time
+    const delayMinutes = prompt("How many minutes do you need? (Enter a number between 5-60)");
+    if (delayMinutes === null) return;
+    
+    const minutes = parseInt(delayMinutes);
+    if (isNaN(minutes) || minutes < 5 || minutes > 60) {
+        alert("Please enter a valid number between 5 and 60");
+        return;
+    }
+    
+    fetch(`/running_late/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ delay_minutes: minutes })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to update pickup time');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update pickup time');
+    });
+}
+
+function acknowledgeNotification(orderId) {
+    fetch('/mark_notifications_sent', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order_id: orderId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to acknowledge notification');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to acknowledge notification');
+    });
+}
+
+function showModifyTimeModal(orderId, currentDate, currentTime) {
+    const form = document.getElementById('modifyTimeForm');
+    form.action = `/modify_pickup_time/${orderId}`;
+    
+    const pickupDate = document.getElementById('modifyPickupDate');
+    const pickupTime = document.getElementById('modifyPickupTime');
+    
+    // Set minimum date to today
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0];
+    pickupDate.min = minDate;
+    pickupDate.value = currentDate;
+    
+    // Generate time slots
+    pickupTime.innerHTML = '';
+    for (let hour = 11; hour <= 14; hour++) {
+        for (let minute of ['00', '30']) {
+            if (hour === 14 && minute === '30') continue;
+            
+            const timeStr = `${hour.toString().padStart(2, '0')}:${minute}`;
+            const option = document.createElement('option');
+            option.value = timeStr;
+            option.textContent = new Date(`2000-01-01T${timeStr}`).toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            option.selected = timeStr === currentTime;
+            pickupTime.appendChild(option);
+        }
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('modifyTimeModal'));
+    modal.show();
+}
+
+function markRunningLate(orderId) {
+    const form = document.getElementById('runningLateForm');
+    form.action = `/running_late/${orderId}`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('runningLateModal'));
+    modal.show();
+}
+
+function cancelOrder(orderId) {
+    if (confirm('Are you sure you want to cancel this order?')) {
+        fetch(`/cancel_order/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Error canceling order');
+            }
+        });
+    }
+}
+
+// Validate modify time form
+document.getElementById('modifyTimeForm').addEventListener('submit', function(e) {
+    const pickupDate = document.getElementById('modifyPickupDate').value;
+    const pickupTime = document.getElementById('modifyPickupTime').value;
+    
+    const selectedDateTime = new Date(`${pickupDate}T${pickupTime}`);
+    const now = new Date();
+    
+    if (selectedDateTime <= now) {
+        e.preventDefault();
+        alert('Please select a future date and time.');
+    }
+});
+
+function checkNotifications() {
+    fetch('/check_notifications')
+        .then(response => response.json())
+        .then(data => {
+            if (data.notifications && data.notifications.length > 0) {
+                const notificationsDiv = document.getElementById('notifications');
+                notificationsDiv.innerHTML = '';
+                
+                data.notifications.forEach(notification => {
+                    const alert = document.createElement('div');
+                    // Use different alert styles based on notification type
+                    if (notification.type === 'order_moved_to_history') {
+                        alert.className = 'alert alert-warning alert-dismissible fade show';
+                    } else {
+                        alert.className = 'alert alert-info alert-dismissible fade show';
+                    }
+                    alert.role = 'alert';
+                    
+                    // Create notification message
+                    const message = document.createElement('span');
+                    message.textContent = notification.message;
+                    alert.appendChild(message);
+                    
+                    // Create action buttons container
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.className = 'float-right ml-3';
+                    
+                    // Add appropriate action buttons based on notification type
+                    if (notification.type === 'reminder' || notification.type === 'running_late') {
+                        // Acknowledge button
+                        const ackButton = document.createElement('button');
+                        ackButton.type = 'button';
+                        ackButton.className = 'btn btn-sm btn-primary mr-2';
+                        ackButton.textContent = 'Acknowledge';
+                        ackButton.onclick = () => acknowledgeNotification(notification.order_id);
+                        buttonContainer.appendChild(ackButton);
+                    } else if (notification.type === 'order_moved_to_history') {
+                        // View History button for orders moved to history
+                        const viewHistoryButton = document.createElement('button');
+                        viewHistoryButton.type = 'button';
+                        viewHistoryButton.className = 'btn btn-sm btn-success mr-2';
+                        viewHistoryButton.textContent = 'View History';
+                        viewHistoryButton.onclick = () => window.location.href = '/order_history';
+                        buttonContainer.appendChild(viewHistoryButton);
+                    }
+                    
+                    // Clear button (for all notification types)
+                    const clearButton = document.createElement('button');
+                    clearButton.type = 'button';
+                    clearButton.className = 'btn btn-sm btn-secondary';
+                    clearButton.textContent = 'Clear';
+                    clearButton.onclick = () => clearNotification(notification.id);
+                    buttonContainer.appendChild(clearButton);
+                    
+                    alert.appendChild(buttonContainer);
+                    notificationsDiv.appendChild(alert);
+                });
+            }
+        })
+        .catch(error => console.error('Error checking notifications:', error));
+}
+
+function clearNotification(notificationId) {
+    fetch(`/clear_notification/${notificationId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            checkNotifications(); // Refresh notifications
+        }
+    })
+    .catch(error => console.error('Error clearing notification:', error));
+}
+
+// Check for notifications every 30 seconds
+setInterval(checkNotifications, 30000);
+// Initial check when page loads
+document.addEventListener('DOMContentLoaded', checkNotifications);
+
+// Hide scroll indicator when user starts scrolling
+document.addEventListener('DOMContentLoaded', function() {
+  const scrollableOrders = document.querySelector('.scrollable-orders');
+  const scrollIndicator = document.querySelector('.scroll-indicator');
+  
+  if (scrollableOrders && scrollIndicator) {
+    scrollableOrders.addEventListener('scroll', function() {
+      scrollIndicator.style.opacity = '0';
+      scrollIndicator.style.transform = 'translateY(-10px)';
+      scrollIndicator.style.transition = 'opacity 0.3s, transform 0.3s';
+      
+      // Show indicator again after 3 seconds of no scrolling
+      clearTimeout(scrollIndicator.timeout);
+      scrollIndicator.timeout = setTimeout(function() {
+        scrollIndicator.style.opacity = '1';
+        scrollIndicator.style.transform = 'translateY(0)';
+      }, 3000);
+    });
+  }
+});
+</script>
+{% endblock %} 

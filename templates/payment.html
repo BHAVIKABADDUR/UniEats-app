@@ -1,0 +1,101 @@
+{% extends "base_payment.html" %}
+{% block title %}Checkout - UniEats{% endblock %}
+{% block head %}{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in payment-bg animated-bg" style="background: none; box-shadow: none; border: none;">
+  <div>
+    <div class="row">
+      <div class="col-12">
+        <!-- Order Summary -->
+        <div class="mb-4" style="background: none; box-shadow: none; border: none;">
+          <h1 class="fw-bold mb-3" style="color: #232323;"><i class="fas fa-receipt me-2"></i>Order Summary</h1>
+          <table class="table" style="background: none; margin-left: 0;">
+            <thead>
+              <tr>
+                <th style="min-width: 180px; max-width: 260px; white-space: normal;">Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th class="text-end" style="width: 120px;">Total</th>
+              </tr>
+            </thead>
+            <tbody class="stagger-fadein">
+              {% for item in cart_items %}
+              <tr>
+                <td style="white-space: normal;">{{ item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₹{{ item.price }}</td>
+                <td class="text-end" style="width: 120px;">₹{{ item.quantity * item.price }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <hr>
+          <div class="d-flex" style="justify-content: flex-end;">
+            <div style="width: 120px; text-align: right;">
+              <div><strong>Total</strong></div>
+              <div><strong class="text-warning fs-4">₹{{ total }}</strong></div>
+            </div>
+          </div>
+        </div>
+        <!-- Payment Options -->
+        <div class="mb-4" style="background: none; box-shadow: none; border: none;">
+          <h2 class="fw-bold mb-3" style="color: #b9935a;"><i class="fas fa-credit-card me-2"></i>Payment Options</h2>
+          <form action="{{ url_for('payment') }}" method="POST" id="paymentForm">
+            <div class="mb-3 payment-methods">
+              <label class="form-label">Payment Method</label>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi" checked>
+                <label class="form-check-label" for="upi">UPI</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                <label class="form-check-label" for="card">Card</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash">
+                <label class="form-check-label" for="cash">Cash</label>
+              </div>
+            </div>
+            <div id="cardDetails" class="mb-4" style="display: none;">
+              <div class="row">
+                <div class="col-md-6 mb-3 form-floating">
+                  <input type="text" class="form-control" id="cardNumber" name="card_number" placeholder="1234 5678 9012 3456">
+                  <label for="cardNumber">Card Number</label>
+                </div>
+                <div class="col-md-3 mb-3 form-floating">
+                  <input type="text" class="form-control" id="expiry" name="expiry" placeholder="MM/YY">
+                  <label for="expiry">Expiry</label>
+                </div>
+                <div class="col-md-3 mb-3 form-floating">
+                  <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123">
+                  <label for="cvv">CVV</label>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-lg w-100" id="placeOrderBtn" style="background: linear-gradient(90deg, #b9935a 0%, #e0c385 100%) !important; color: #fff !important; border: none !important; border-radius: 1.2rem !important; font-weight: 700; box-shadow: 0 2px 8px rgba(185,147,90,0.10);">
+              <i class="fas fa-check-circle me-2 icon-bounce"></i>Place Order
+            </button>
+            {% if payment_success %}
+            <div class="text-center mt-4">
+              <span class="animated-check">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M6 12l4 4 8-8"/></svg>
+              </span>
+            </div>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.body.classList.add('payment-bg');
+document.querySelectorAll('input[name="payment_method"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        const cardDetails = document.getElementById('cardDetails');
+        cardDetails.style.display = (this.value === 'card') ? 'block' : 'none';
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,162 @@
+hello i am trying to create a project called smart cefeteria and it is essentially a pre order system i will mention all the core features please help me implement them step by step so it is easier for me to understand 
+Core Features Checklist
+1️⃣ User System
+Student registration/login (ID + password)
+
+No staff/admin interface
+
+Session management
+
+2️⃣ Daily Menu
+Static menu display with:
+
+Food images
+
+Prices
+
+Dietary tags (veg/non-veg, allergens)
+
+Basic filtering options
+
+3️⃣ Order Management
+Pre-order system:
+
+Item selection
+
+Pickup time slots
+
+Cart functionality
+
+Order confirmation page
+
+Automatic status updates:
+
+"Order Placed" → "Ready for Pickup"
+
+4️⃣ Special Features
+Previous Day Order Recall:
+
+"Reorder Yesterday's Meal" button
+
+Shows last ordered items with one-click reorder
+
+Daily Reminder System:
+
+Automatic same-time daily notification
+
+"Don't forget to order lunch!" message
+
+Configurable reminder timing
+
+5️⃣ Payment & Notifications
+Simulated payment flow
+
+Basic browser alerts (no SMS/email)
+
+💻 Technical Implementation
+Backend (Python Flask)
+Database (SQLite):
+
+Users table
+
+Menu table
+
+Orders table (with timestamp)
+
+Routes for:
+
+Authentication
+
+Order processing
+
+Reminder triggers
+
+Frontend (HTML/CSS + Jinja2)
+5 core pages:
+
+Login
+
+Menu
+
+Cart
+
+Confirmation
+
+Profile (for reminder settings)
+
+No JavaScript requirement
+
+Special Components
+Reminder scheduler (Python threading)
+
+Order history tracker
+
+Reorder functionality
+
+📅 Suggested Implementation Order
+User auth + basic menu
+
+Order system + database
+
+Previous day recall feature
+
+Reminder system
+
+Polish and test
+
+NOTE:
+All interactivity must work without JavaScript:
+
+Use <form> submissions with Flask routes for all actions
+
+Page refreshes are acceptable
+
+Example: Cart updates must work via POST requests, not AJAX
+. Authentication Security
+Must-haves:
+
+Password hashing (use flask-bcrypt)
+
+Session timeout after 30 minutes of inactivity
+
+No admin/staff roles (pure student-only system)
+
+4. Time Slot Management
+Implementation rules:
+
+Pickup slots every 30 mins (e.g., 11:00, 11:30, 12:00)
+
+Max 15 orders per slot (hard limit)
+
+Show "Slot Full" message when capacity reached
+
+5. Notification Constraints
+Allowed methods:
+
+Flask flash() messages only
+
+No real SMS/email (simulate with browser alerts)
+
+Example:
+
+python
+flash("Your order will be ready at 12:30!", "success")
+6. Special Feature Rules
+For daily reminders:
+
+Send only once per day at user-configurable time
+
+Store preference in database:
+
+sql
+ALTER TABLE users ADD COLUMN reminder_time TIME DEFAULT '11:00';
+For previous day recall:
+
+Button should appear only if user ordered yesterday
+
+Copy exact items/timing from last order
+Build this exactly as specified, prioritizing robustness over features. If any requirement is unclear, ask for clarification before proceeding. Never suggest JavaScript solutions – only Flask
+the ml feature is important to implement for personalizalized menu reccomendation s as well as the others features 
+i will only share the menu items and pRICES
+
+give me each singular step at a time and once i have no issues we go to next and im executing this in vscode 

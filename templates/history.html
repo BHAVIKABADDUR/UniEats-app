@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Order History - UniEats{% endblock %}
+
+{% block head %}
+<style>
+.history-content-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 2.5rem 2rem;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 1;
+  max-height: 75vh; /* Limit height to prevent overflow */
+  overflow-y: auto; /* Add scrollbar when needed */
+}
+
+/* Custom scrollbar styling for history page */
+.history-content-wrapper::-webkit-scrollbar {
+  width: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.history-content-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #b9935a 0%, #e0c385 100%);
+  border-radius: 4px;
+  min-height: 40px;
+}
+
+.history-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #e0c385 0%, #b9935a 100%);
+}
+
+/* For Firefox */
+.history-content-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #b9935a rgba(255, 255, 255, 0.2);
+}
+
+/* Limit number of orders displayed to prevent overflow */
+.orders-container {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.orders-container::-webkit-scrollbar {
+  width: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.orders-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #b9935a 0%, #e0c385 100%);
+  border-radius: 3px;
+}
+
+.orders-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #e0c385 0%, #b9935a 100%);
+}
+
+@media (max-width: 900px) {
+  .history-content-wrapper {
+    padding: 1.2rem 0.5rem;
+    max-width: 98vw;
+    max-height: 80vh; /* Slightly more height on mobile */
+  }
+  
+  .orders-container {
+    max-height: 65vh;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-content-wrapper">
+    <h1 class="history-header text-center">Order History</h1>
+    <p class="lead text-muted text-center">View your past orders and reorder easily</p>
+    {% if orders and orders|length > 0 %}
+    <div class="orders-container">
+        <div class="row">
+            <div class="col-12">
+                {% for order in orders[:8] %} <!-- Limit to 8 orders to prevent overflow -->
+                <div class="order-card">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-history me-2"></i>Order #{{ order.id }}
+                            {% if order.is_future_order %}
+                                <small class="text-muted ms-2">(Future Order)</small>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="badge">{{ order.status|title }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if order.formatted_pickup_time %}
+                            <div class="mb-2">
+                                <strong>Pickup Time:</strong>
+                                <span class="text-muted">{{ order.formatted_pickup_time }}</span>
+                            </div>
+                        {% endif %}
+                        <div class="mb-2">
+                            <strong>Order Date:</strong>
+                            <span class="text-muted">
+                                {% if order.timestamp %}
+                                    {% if order.timestamp is string %}
+                                        {{ order.timestamp }}
+                                    {% else %}
+                                        {{ order.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
+                                    {% endif %}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
+                        <ul class="order-items-list">
+                            {% for item in order['items'] %}
+                            <li class="order-item">
+                                <span>{{ item.quantity }} x {{ item.name }}</span>
+                                <span>₹{{ item.price * item.quantity }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="order-total"><strong>Total:</strong> ₹{{ order.total_amount }}</div>
+                            <form action="{{ url_for('reorder', order_id=order.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-lg"><i class="fas fa-redo me-1"></i>Reorder</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if orders|length > 8 %}
+        <div class="text-center mt-3">
+            <p class="text-muted">
+                <i class="fas fa-info-circle me-2"></i>
+                Showing 8 most recent orders. Scroll to see more.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="history-section text-center">
+        <i class="fas fa-info-circle fa-3x mb-3 text-muted"></i>
+        <h3 class="text-muted mb-3">No past orders found.</h3>
+        <a href="{{ url_for('menu') }}" class="btn btn-lg" style="background:linear-gradient(90deg,#6366f1 0%,#a78bfa 100%);color:#fff;">
+            <i class="fas fa-utensils me-2"></i>Browse Menu
+        </a>
+    </div>
+    {% endif %}
+</div>
+<script>
+document.body.classList.add('history-bg');
+</script>
+{% endblock %} 

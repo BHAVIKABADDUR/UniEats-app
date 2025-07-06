@@ -1,0 +1,24 @@
+the veg and non veg options(REMOVE EGG OPTION) similar breakfast and lunch should be clickable and only added to lunch section so when they choose(click) the option it shows them the veg options  and non veg options i will now mention which items are veg non veg  from the lunch section so you can make chnages
+Breakfast items:
+Dosa (₹35)
+Idly (₹35)
+Vada (₹35)
+Bonda (₹30)
+Poori (₹35)
+Lunch:
+ veg 
+Veg Fried Rice (₹60)
+Veg Noodles (₹60)
+Manchurian Fried Rice (₹60)
+Mancuria( (₹60)
+Meals (₹70)
+
+Non veg
+Chicken Fried Rice (₹70)
+Egg Fried Rice (₹60)
+Chicken Noodles (₹70)
+Egg noodles(₹60)
+Omelette(₹25)
+
+n the menu there should be a option to order at any given date if the date is at future there should be a section that displays pending orders and at checkout there should be slots to decide their pick up time with half an hour interverals 
+and for this future ordering the time they selected as the pick up slot should be set as the reminder notification .

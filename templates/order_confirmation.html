@@ -1,0 +1,177 @@
+{% extends "base_blank.html" %}
+
+{% block styles %}
+<style>
+  body.order-confirmation-bg {
+    background: url('/static/images/order_confirmation.jpg') center center/cover no-repeat fixed !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  .order-confirm-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 50vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0;
+  }
+  .order-confirm-content {
+    min-width: 320px;
+    max-width: 420px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    margin-top: 28vh;
+    margin-left: 6vw;
+  }
+  .order-confirm-check {
+    /* Modern gold/orange gradient for checkmark */
+    background: linear-gradient(90deg, #b9935a 0%, #e0c385 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    font-size: 3.2rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .order-confirm-check i {
+    font-size: 3.2rem;
+    /* Remove color, inherit from parent gradient */
+  }
+  .order-confirm-message {
+    color: #232323;
+    font-weight: 800;
+    font-size: 2.2rem;
+    margin-bottom: 0.7rem;
+    text-align: center;
+    text-shadow: 0 2px 12px rgba(255,255,255,0.10);
+    letter-spacing: -1px;
+  }
+  .order-confirm-lead {
+    color: #232323;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 0 2px 12px rgba(255,255,255,0.10);
+  }
+  .order-confirm-content .btn-primary {
+    background: linear-gradient(90deg, #f7b733 0%, #fc4a1a 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 1.2rem !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(247, 183, 51, 0.13);
+    margin: 0 0.5rem;
+    min-width: 160px;
+    font-size: 1.1rem;
+    transition: background 0.18s, color 0.18s, filter 0.18s;
+  }
+  .order-confirm-content .btn-primary:hover, .order-confirm-content .btn-primary:focus {
+    background: linear-gradient(90deg, #fc4a1a 0%, #f7b733 100%) !important;
+    color: #fff !important;
+    filter: brightness(1.08);
+    text-decoration: none;
+  }
+  .order-confirm-content .btn-outline-primary {
+    background: none !important;
+    color: #b9935a !important;
+    border: 2px solid #b9935a !important;
+    border-radius: 1.2rem !important;
+    font-weight: 700;
+    min-width: 160px;
+    font-size: 1.1rem;
+    margin: 0 0.5rem;
+    transition: background 0.18s, color 0.18s, filter 0.18s;
+  }
+  .order-confirm-content .btn-outline-primary:hover, .order-confirm-content .btn-outline-primary:focus {
+    background: #e0c385 !important;
+    color: #232323 !important;
+    filter: brightness(1.1);
+    text-decoration: none;
+  }
+  #reminderInfo {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    background: rgba(255,255,255,0.65);
+    color: #232323;
+    border: none;
+    box-shadow: none;
+    border-radius: 1rem;
+    display: inline-block;
+    padding: 1rem 1.5rem;
+  }
+  @media (max-width: 900px) {
+    .order-confirm-wrapper {
+      position: static;
+      width: 100vw;
+      height: auto;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 0 2vw 4vh 0;
+    }
+    .order-confirm-content {
+      align-items: center;
+      margin-top: 0;
+    }
+    .order-confirm-message, .order-confirm-lead, #reminderInfo {
+      text-align: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-confirm-wrapper">
+  <div class="order-confirm-content">
+    <div class="order-confirm-check">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="order-confirm-message">Order Confirmed!</div>
+    <div class="order-confirm-lead">Thank you for your order.</div>
+    <div id="reminderInfo" class="alert alert-info d-none"></div>
+    <div class="mt-4">
+      <a href="{{ url_for('menu') }}" class="btn btn-primary me-2">Continue Shopping</a>
+      {% if show_pending_orders_button %}
+      <a href="{{ url_for('pending_orders') }}" class="btn btn-outline-primary">View Orders</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('order-confirmation-bg');
+    // Check if there was a reminder set
+    const reminderSettings = localStorage.getItem('reminderSettings');
+    if (reminderSettings) {
+        const settings = JSON.parse(reminderSettings);
+        const reminderInfo = document.getElementById('reminderInfo');
+        reminderInfo.innerHTML = `
+            <h4>Pickup Details</h4>
+            <p><strong>Item:</strong> ${settings.itemName}</p>
+            <p><strong>Date:</strong> ${settings.date}</p>
+            <p><strong>Time:</strong> ${settings.time}</p>
+            <small>A reminder will be sent before your pickup time.</small>
+        `;
+        reminderInfo.classList.remove('d-none');
+        // Clear the reminder settings from localStorage
+        localStorage.removeItem('reminderSettings');
+    }
+});
+</script>
+{% endblock %} 

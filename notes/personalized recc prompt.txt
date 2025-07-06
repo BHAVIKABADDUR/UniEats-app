@@ -1,0 +1,21 @@
+1. User’s Own Most-Ordered Items (Personal History)
+The system first checks what you (the current user) have ordered most often in the selected category.
+These items are sorted by how many times you’ve ordered them (most ordered first).
+These are added to the recommendations list first (up to 5).
+2. Collaborative Filtering (ML: Nearest Neighbors)
+If there are still fewer than 5 recommendations, the system uses collaborative filtering:
+It builds a matrix of all users and their order counts for each item in the category.
+It uses the NearestNeighbors algorithm to find the 3 users most similar to you (based on your order history in that category).
+It recommends items that these similar users have ordered, but you have not, and that you haven’t marked as “not interested.”
+These ML-based recommendations are added next (avoiding duplicates and “not interested” items).
+3. Most Popular Items (All Users)
+If there are still fewer than 5 recommendations, the system looks at the most popular items in the category (by all users, sorted by total order count).
+It adds these to your recommendations, skipping any already recommended or “not interested.”
+4. Random Items (Fallback)
+If there are still fewer than 5, the system randomly selects items from the category (again, skipping already recommended and “not interested” items) to fill up to 5.
+5. Exclusions
+Any item you have marked as “not interested” is excluded from all recommendation steps.
+No duplicate items are shown.
+6. Display
+Only the top 5 recommendations are shown in the UI for each category.
+Each recommended item has a “Not interested?” button so you can further personalize your recommendations.
